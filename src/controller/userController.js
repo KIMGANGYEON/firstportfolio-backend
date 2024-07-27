@@ -1,4 +1,13 @@
 import User from "../models/User";
+import jwt from "jsonwebtoken";
+
+export const getAuth = async (req, res, next) => {
+  return res.json({
+    id: req.user._id,
+    email: req.user.email,
+    name: req.user.name,
+  });
+};
 
 export const postJoin = async (req, res, next) => {
   const { email, password, password2 } = req.body;
@@ -14,6 +23,78 @@ export const postJoin = async (req, res, next) => {
 
     const user = new User(req.body);
     await user.save();
+    return res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postLogin = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return res.status(400).send("해당 유저의 이메일을 찾을수 없습니다");
+    }
+    const isMatch = await user.comparePassword(req.body.password);
+    if (!isMatch) {
+      return res.status(400).send("잘못된 비밀번호 입니다");
+    }
+
+    const payload = {
+      userId: user._id.toHexString(),
+    };
+
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    return res.json({ user, accessToken });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postEdit = async (req, res, next) => {
+  let { id, email, name } = req.body;
+  try {
+    const user = await User.findOne({ _id: id });
+
+    if (!user) {
+      return res.status(400).send("해당 유저를 찾을수 없습니다");
+    }
+
+    if (!email) {
+      email = user.email;
+    }
+
+    if (email !== user.email) {
+      const useremailExists = await User.exists({ email });
+      if (useremailExists) {
+        return res.status(400).send("해당 이메일은 다른 유저가 사용중 입니다");
+      }
+    }
+
+    if (!name) {
+      name = user.name;
+    }
+
+    const updateUser = await User.findByIdAndUpdate(
+      id,
+      {
+        email,
+        name,
+      },
+      { new: true }
+    );
+    req.body = updateUser;
+    return res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postLogout = async (req, res, next) => {
+  try {
     return res.sendStatus(200);
   } catch (error) {
     next(error);
