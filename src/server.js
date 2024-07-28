@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import userRooter from "./router/userRouter";
+import userRouter from "./router/userRouter";
 dotenv.config();
 
 const app = express();
@@ -24,7 +24,7 @@ app.get("/", (req, res) => {
   return res.send("hello world!");
 });
 
-app.use("/users", userRooter);
+app.use("/users", userRouter);
 
 app.use((error, req, res, next) => {
   res.status(error.status || 500);

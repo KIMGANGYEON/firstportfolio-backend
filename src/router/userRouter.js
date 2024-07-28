@@ -8,12 +8,12 @@ import {
 } from "../controller/userController";
 import auth from "../middleware/auth";
 
-const userRooter = express.Router();
+const userRouter = express.Router();
 
-userRooter.get("/auth", auth, getAuth);
-userRooter.post("/join", postJoin);
-userRooter.post("/login", postLogin);
-userRooter.post("/edit", postEdit);
-userRooter.post("/logout", auth, postLogout);
+userRouter.get("/auth", auth, getAuth);
+userRouter.post("/join", postJoin);
+userRouter.post("/login", postLogin);
+userRouter.post("/edit", postEdit);
+userRouter.post("/logout", auth, postLogout);
 
-export default userRooter;
+export default userRouter;
