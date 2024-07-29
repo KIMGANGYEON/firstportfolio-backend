@@ -1,5 +1,6 @@
 import User from "../models/User";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 export const getAuth = async (req, res, next) => {
   return res.json({
@@ -54,6 +55,14 @@ export const postLogin = async (req, res, next) => {
   }
 };
 
+export const postLogout = async (req, res, next) => {
+  try {
+    return res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const postEdit = async (req, res, next) => {
   let { id, email, name } = req.body;
   try {
@@ -93,8 +102,36 @@ export const postEdit = async (req, res, next) => {
   }
 };
 
-export const postLogout = async (req, res, next) => {
+export const postEditUserPassword = async (req, res, next) => {
+  const { id, oldpassword, newpassword, newpassword2 } = req.body;
+
   try {
+    const user = await User.findOne({ _id: id });
+
+    const isMatch = await bcrypt.compare(oldpassword, user.password);
+    if (!isMatch) {
+      return res.status(400).send("기존 비밀번호가 일차하지 않습니다");
+    }
+
+    if (oldpassword === newpassword) {
+      return res.status(400).send("이전 비밀번호와 일치합니다");
+    }
+
+    if (newpassword !== newpassword2) {
+      return res.status(400).send("새로운 비밀번호가 일치하지 않습니다");
+    }
+
+    const hashedPassword = await bcrypt.hash(newpassword, 10);
+
+    await User.findByIdAndUpdate(
+      id,
+      {
+        password: hashedPassword,
+      },
+      {
+        new: true,
+      }
+    );
     return res.sendStatus(200);
   } catch (error) {
     next(error);
