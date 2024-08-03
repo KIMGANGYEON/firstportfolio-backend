@@ -3,6 +3,8 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import userRouter from "./router/userRouter";
+import path from "path";
+import productRouter from "./router/productRouter";
 dotenv.config();
 
 const app = express();
@@ -10,6 +12,7 @@ const port = 4000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "../uploads")));
 
 mongoose
   .connect(process.env.MONGO_URI)
@@ -25,6 +28,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/users", userRouter);
+app.use("/products", productRouter);
 
 app.use((error, req, res, next) => {
   res.status(error.status || 500);

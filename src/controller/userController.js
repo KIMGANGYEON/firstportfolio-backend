@@ -7,6 +7,8 @@ export const getAuth = async (req, res, next) => {
     id: req.user._id,
     email: req.user.email,
     name: req.user.name,
+    cart: req.user.cart,
+    history: req.user.history,
   });
 };
 

@@ -13,6 +13,14 @@ const userSchema = mongoose.Schema({
   password: {
     type: String,
   },
+  cart: {
+    type: Array,
+    default: [],
+  },
+  history: {
+    type: Array,
+    default: [],
+  },
 });
 
 userSchema.pre("save", async function (next) {
