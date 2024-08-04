@@ -34,3 +34,12 @@ export const postImage = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getProduct = async (req, res, next) => {
+  try {
+    const products = await Product.find().populate("writer");
+    return res.status(200).json({ products });
+  } catch (error) {
+    next(error);
+  }
+};
