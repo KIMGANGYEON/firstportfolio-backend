@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import userRouter from "./router/userRouter";
 import path from "path";
 import productRouter from "./router/productRouter";
+import searchRouter from "./router/searchRouter";
 dotenv.config();
 
 const app = express();
@@ -29,6 +30,7 @@ app.get("/", (req, res) => {
 
 app.use("/users", userRouter);
 app.use("/products", productRouter);
+app.use("/search", searchRouter);
 
 app.use((error, req, res, next) => {
   res.status(error.status || 500);
