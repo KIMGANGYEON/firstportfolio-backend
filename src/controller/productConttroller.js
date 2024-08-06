@@ -43,3 +43,13 @@ export const getProduct = async (req, res, next) => {
     next(error);
   }
 };
+
+export const postUsedProduct = async (req, res, next) => {
+  const { id } = req.body;
+  try {
+    const product = await Product.findOne({ _id: id });
+    return res.status(200).json({ product });
+  } catch (error) {
+    next(error);
+  }
+};
