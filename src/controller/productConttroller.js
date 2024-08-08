@@ -44,6 +44,27 @@ export const getProduct = async (req, res, next) => {
   }
 };
 
+export const getProduct2 = async (req, res, next) => {
+  const type = req.query.type;
+  let productIds = req.params.id;
+
+  if (type === "array") {
+    let ids = productIds.split(",");
+    productIds = ids.map((item) => {
+      return item;
+    });
+  }
+
+  try {
+    const product = await Product.find({ _id: { $in: productIds } }).populate(
+      "writer"
+    );
+    return res.status(200).send(product);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const postUsedProduct = async (req, res, next) => {
   const { id } = req.body;
   try {

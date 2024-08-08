@@ -1,6 +1,7 @@
 import User from "../models/User";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import Product from "../models/Product";
 
 export const getAuth = async (req, res, next) => {
   return res.json({
@@ -138,4 +139,111 @@ export const postEditUserPassword = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const postEditUserProduct = async (req, res, next) => {
+  const { id } = req.body;
+
+  try {
+    const product = await Product.find({ writer: id }).sort({
+      createdAt: -1,
+    });
+    return res.status(200).json({ product });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postCart = async (req, res, next) => {
+  try {
+    const userInfo = await User.findOne({ _id: req.user._id });
+
+    let duplicate = false;
+    userInfo.cart.forEach((item) => {
+      if (item.id === req.body.productId) {
+        duplicate = true;
+      }
+    });
+
+    if (duplicate) {
+      const user = await User.findOneAndUpdate(
+        {
+          _id: req.user._id,
+          "cart.id": req.body.productId,
+        },
+        { $inc: { "cart.$.quantity": 1 } },
+        { new: true }
+      );
+
+      return res.status(201).send(user.cart);
+    } else {
+      const user = await User.findOneAndUpdate(
+        { _id: req.user._id },
+        {
+          $push: {
+            cart: {
+              id: req.body.productId,
+              quantity: 1,
+              data: Date.now(),
+            },
+          },
+        },
+        { new: true }
+      );
+      return res.status(201).send(user.cart);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteCart = async (req, res, next) => {
+  try {
+    const userInfo = await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { $pull: { cart: { id: req.query.productId } } },
+      { new: true }
+    );
+    const cart = userInfo.cart;
+    const array = cart.map((item) => {
+      return item.id;
+    });
+
+    const productInfo = await Product.find({ _id: { $in: array } }).populate(
+      "writer"
+    );
+
+    return res.json({ productInfo, cart });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const postPayment = async (req, res, next) => {
+  let history = [];
+  let transactionData = {};
+
+  req.body.cartDetails.forEach((item) => {
+    history.push({
+      dateOfPurchase: new Date().toISOString(),
+      name: item.title,
+      id: item._id,
+      price: item.discount,
+      quantity: item.quantity,
+      paymentId: crypto.randomUUID(),
+    });
+  });
+
+  transactionData.user = {
+    id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+  };
+  transactionData.product = history;
+
+  await User.findOneAndUpdate(
+    { _id: req.user._id },
+    { $push: { history: { $each: history } }, $set: { cart: [] } }
+  );
+  const payment = 
 };

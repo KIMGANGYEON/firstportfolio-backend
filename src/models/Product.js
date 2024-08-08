@@ -28,6 +28,7 @@ const productSchema = mongoose.Schema({
   views: {
     type: Number,
   },
+  createdAt: { type: Date, required: true, default: Date.now },
 });
 
 const Product = mongoose.model("Product", productSchema);
